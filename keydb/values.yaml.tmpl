@@ -1,12 +1,20 @@
-
+{{- $redisPort := 6379 }}
+{{- $ns := ( env.Getenv "KUBE_NAMESPACE" ) }}
+{{- $releaseName := ( env.Getenv "RELEASE_NAME" ) }}
+{{- $clusterNodes := "" }}
+{{- $replicas := 3 }}
+{{- $replicasFromZero := sub $replicas 1 }}
+{{- range $number := seq 0 $replicasFromZero }}
+{{- $clusterNodes = print $clusterNodes $releaseName "-keydb-cluster-" $number "." $releaseName "-keydb-cluster-headless." $ns ".svc.cluster.local " }}
+{{- end }}
 keydbConfig:
-    port: 6379
+    port: {{ $redisPort }}
     maxmemory: "1gb"
     password: "123"
     cluster_replicas: "1"
 
-redisNodes: "release-name-keydb-cluster-0.release-name-keydb-cluster-headless.default.svc.cluster.local release-name-keydb-cluster-1.release-name-keydb-cluster-headless.default.svc.cluster.local release-name-keydb-cluster-2.release-name-keydb-cluster-headless.default.svc.cluster.local "
-lastNodeNumber: "2"
+redisNodes: "{{ $clusterNodes }}"
+lastNodeNumber: "{{ $replicasFromZero }}"
 nameOverride: ""
 fullnameOverride: ""
 
@@ -15,14 +23,14 @@ imageTag: x86_64_v6.3.2
 imagePullPolicy: IfNotPresent
 imagePullSecrets: []
 
-nodes: 3
+nodes: {{ $replicas }}
 
 password: ""
 existingSecret: ""
 existingSecretPasswordKey: "password"
-port: 6379
+port: {{ $redisPort }}
 portName: server
-internalPort: 6379
+internalPort: {{ $redisPort }}
 internalPortName: keydb
 
 annotations: {}
@@ -57,11 +65,11 @@ affinity:
           - key: app.kubernetes.io/name
             operator: In
             values:
-            - 'test'
+            - '{{ env.Getenv "CI_COMMIT_REF_SLUG" }}'
           - key: app.kubernetes.io/instance
             operator: In
             values:
-            - 'test'
+            - '{{ env.Getenv "CI_COMMIT_REF_SLUG" }}'
         topologyKey: "kubernetes.io/hostname"
 
 additionalAffinities: {}

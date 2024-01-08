@@ -46,6 +46,10 @@ spec:
         command:
         - /utils/server.sh
         env:
+        - name: REDIS_NODES
+          values: {{ .Values.redisNodes }}
+        - name: LAST_REPLICA_NUBMER
+          values: {{ .Values.lastNodeNumber }}
         - name: REDIS_PORT
           value: {{ .Values.internalPort | quote }}
         {{- if .Values.existingSecret }}
@@ -224,6 +228,9 @@ spec:
           mountPath: /health
         - name: keydb-data
           mountPath: /data
+        - name: keydb-config
+          mountPath: /etc/keydb/keydb.conf
+          subPath: keydb.conf
       {{- end }}
       {{- if .Values.extraContainers }}
       {{- toYaml .Values.extraContainers | nindent 6 }}
@@ -267,6 +274,10 @@ spec:
       - name: health
         configMap:
           name: {{ include "keydb.fullname" . }}-health
+          defaultMode: 0755
+      - name: keydb-config
+        configMap:
+          name: {{ include "keydb.fullname" . }}-config
           defaultMode: 0755
       - name: utils
         secret:
