@@ -1,22 +1,8 @@
-# Rollout release
+# Keydb cluster
 
-## New KeyDB release example
-
-### Package new release in .tgz
-
-```console
-helm package ./keydb/ --destination ./.deploy/
+Render template 
+```bash
+gomplate -f values.yaml.tmpl -o values.yaml
 ```
 
-### Upload the release to Github
-
-```console
-helm-cr upload --skip-existing --config ~/.cr.yaml
-```
-
-### Update index.yaml
-
-```console
-git checkout gh-pages
-helm-cr index --config ~/.cr.yaml -i ./index.yaml -c https://enapter.github.io/charts/
-```
+Gomplate is nessesary for create keydb in cluster mode.
